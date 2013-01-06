@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import configparser
+import logging
+import re
+import sys
+import subprocess
+
+from os import fdopen, getenv
+from os.path import basename, join
+from tempfile import mkstemp
+
+
+def build_keycmd_file(keycmds):
+    if keycmds is None:
+        return None
+    (fd, filename) = mkstemp("mplayerconf")
+    _file = fdopen(fd, "wt")
+    for key, command in keycmds.items():
+        logging.debug("%s: %s" %(key, command))
+        if key not in ("regex", "options"):
+            _file.write("%s %s\n" % (key, command))
+    _file.close()
+    return filename
+
+
+def read_config():
+    """Build dictionaries corresponding to config file sections."""
+    options = []
+    configfile = join(getenv("XDG_CONFIG_HOME", "~/.config"),
+                      "mplayer-autocmd", "config")
+    parser = configparser.ConfigParser()
+    logging.debug("Reading %s", configfile)
+    parser.read(configfile)
+
+    for section in parser.sections():
+        logging.debug("Section " + section)
+        # Sanity check
+        if "regex" not in parser.options(section):
+            raise ValueError("Section %s does not contain a 'regex' key" % section)
+
+        keycmds = {}
+        option = {"name": section,
+                  "regex": parser.get(section, "regex")}
+
+        for name, value in parser.items(section):
+            logging.debug("name: %s, value: %s" % (name, value))
+            if name == "options":
+                option["options"] = value.split(" ")
+            elif name != "regex":
+                keycmds[name.upper()] = value
+        option["keycmds"] = keycmds
+        options.append(option)
+    return options
+
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(__doc__)
+
+    if "-d" in sys.argv:
+        logging.basicConfig(level=logging.DEBUG,
+                            format="%(levelname)s: %(funcName)s: %(msg)s")
+        sys.argv.remove("-d")
+    else:
+        logging.basicConfig(level=logging.INFO, format="%(msg)s")
+    options = read_config()
+    # Use the first argument to find the correct `Options` object
+    filename = basename(sys.argv[1])
+    match = None
+    for option in options:
+        logging.debug("%s - %s" % (["option.regex"], filename))
+        if re.search(option["regex"], filename) is not None:
+            logging.info("Using profile '%s'" % (option["name"]))
+            match = option
+            break
+    else:
+        sys.exit("No regular expression matched %s, exiting." % filename)
+
+    args = ["mplayer"]
+    args.extend(match.get("options", []))
+
+    input_conf_string = "--input=conf=%s" % build_keycmd_file(match["keycmds"])
+
+    args.extend([input_conf_string])
+    args.extend(sys.argv[1:])
+    logging.info("Calling %s" % args)
+    sys.exit(subprocess.call(args))
+
+
+if __name__ == '__main__':
+    main()
