@@ -73,15 +73,17 @@ def main():
             logging.info("Using profile '%s'" % (option["name"]))
             match = option
             break
-    else:
-        sys.exit("No regular expression matched %s, exiting." % filename)
 
     args = ["mplayer"]
-    args.extend(match.get("options", []))
+    if match is not None:
+        args.extend(match.get("options", []))
 
-    input_conf_string = "--input=conf=%s" % build_keycmd_file(match["keycmds"])
+        input_conf_string = "--input=conf=%s" % build_keycmd_file(match["keycmds"])
 
-    args.extend([input_conf_string])
+        args.extend([input_conf_string])
+    else:
+        logging.info("No profile found")
+
     args.extend(sys.argv[1:])
     logging.info("Calling %s" % args)
     sys.exit(subprocess.call(args))
