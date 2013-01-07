@@ -5,7 +5,7 @@ import re
 import sys
 import subprocess
 
-from os import fdopen, getenv
+from os import fdopen, getenv, remove
 from os.path import basename, join
 from tempfile import mkstemp
 
@@ -16,7 +16,7 @@ def build_keycmd_file(keycmds):
     (fd, filename) = mkstemp("mplayerconf")
     _file = fdopen(fd, "wt")
     for key, command in keycmds.items():
-        logging.debug("%s: %s" %(key, command))
+        logging.debug("%s: %s" % (key, command))
         if key not in ("regex", "options"):
             _file.write("%s %s\n" % (key, command))
     _file.close()
@@ -75,10 +75,12 @@ def main():
             break
 
     args = ["mplayer"]
+    keycmd_file = None
     if match is not None:
         args.extend(match.get("options", []))
 
-        input_conf_string = "--input=conf=%s" % build_keycmd_file(match["keycmds"])
+        keycmd_file = build_keycmd_file(match["keycmds"])
+        input_conf_string = "--input=conf=%s" % keycmd_file
 
         args.extend([input_conf_string])
     else:
@@ -86,7 +88,10 @@ def main():
 
     args.extend(sys.argv[1:])
     logging.info("Calling %s" % args)
-    sys.exit(subprocess.call(args))
+    ret = subprocess.call(args)
+    if keycmd_file is not None:
+        remove(keycmd_file)
+    sys.exit(ret)
 
 
 if __name__ == '__main__':
