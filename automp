@@ -54,7 +54,7 @@ def read_config():
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit(__doc__)
+        sys.exit(1)
 
     if "-d" in sys.argv:
         logging.basicConfig(level=logging.DEBUG,
