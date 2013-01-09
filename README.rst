@@ -6,6 +6,8 @@ This is great if you want to skip the intro at the beginning (by providing an
 `-ss xx:xx` option) without doing anything or skipping something with a known
 length in the middle of the file at the press of a button(by providing a
 `key=seek xx.xx` mapping)
+To use it, just type `automp` every time you want to start mplayer instead of
+`mplayer` or use an alias.
 
 The config file (which can be found in
 `$XDG_CONFIG_HOME/mplayer-autocmd-config`) is a file that's parsed by Pythons
