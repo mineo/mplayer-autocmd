@@ -15,7 +15,7 @@ def build_keycmd_file(keycmds):
         return None
     (fd, filename) = mkstemp("mplayerconf")
     _file = fdopen(fd, "wt")
-    for key, command in keycmds.items():
+    for key, command in keycmds:
         logging.debug("%s: %s" % (key, command))
         if key not in ("regex", "options"):
             _file.write("%s %s\n" % (key, command))
@@ -24,33 +24,13 @@ def build_keycmd_file(keycmds):
 
 
 def read_config():
-    """Build dictionaries corresponding to config file sections."""
-    options = []
     configfile = join(getenv("XDG_CONFIG_HOME", "~/.config"),
                       "mplayer-autocmd", "config")
     parser = configparser.ConfigParser()
     logging.debug("Reading %s", configfile)
     parser.read(configfile)
 
-    for section in parser.sections():
-        logging.debug("Section " + section)
-        # Sanity check
-        if "regex" not in parser.options(section):
-            raise ValueError("Section %s does not contain a 'regex' key" % section)
-
-        keycmds = {}
-        option = {"name": section,
-                  "regex": parser.get(section, "regex")}
-
-        for name, value in parser.items(section):
-            logging.debug("name: %s, value: %s" % (name, value))
-            if name == "options":
-                option["options"] = value.split(" ")
-            elif name != "regex":
-                keycmds[name.upper()] = value
-        option["keycmds"] = keycmds
-        options.append(option)
-    return options
+    return parser
 
 
 def main():
@@ -64,22 +44,29 @@ def main():
     else:
         logging.basicConfig(level=logging.INFO, format="%(msg)s")
     options = read_config()
-    # Use the first argument to find the correct `Options` object
+    # Use the first argument to find the correct section
     filename = basename(sys.argv[1])
-    match = None
-    for option in options:
+    match = ""
+    for section in options.sections():
+        # Sanity check
+        if "regex" not in options.options(section):
+            raise ValueError("Section %s does not contain a 'regex' key" % section)
         logging.debug("%s - %s" % (["option.regex"], filename))
-        if re.search(option["regex"], filename) is not None:
-            logging.info("Using profile '%s'" % (option["name"]))
-            match = option
+        if re.search(options.get(section, "regex"), filename) is not None:
+            logging.info("Using profile '%s'" % section)
+            match = section
             break
 
     args = ["mplayer"]
     keycmd_file = None
-    if match is not None:
-        args.extend(match.get("options", []))
+    if match:
+        args.extend(options.get(match, "options", fallback="").split())
 
-        keycmd_file = build_keycmd_file(match["keycmds"])
+        items = options.items(match)
+        for item in items:
+            if item[0] in ("regex", "options"):
+                items.remove(item)
+        keycmd_file = build_keycmd_file(items)
         input_conf_string = "--input=conf=%s" % keycmd_file
 
         args.extend([input_conf_string])
