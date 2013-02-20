@@ -2,7 +2,7 @@
 from distutils.core import setup
 
 setup(name="mplayer-autocmd",
-      version="1",
+      version="2",
       author="Wieland Hoffmann",
       author_email="themineo@gmail.com",
       description="mplayer wrapper providing per-file options & keybinding",
