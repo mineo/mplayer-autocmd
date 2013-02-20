@@ -25,7 +25,7 @@ import sys
 import subprocess
 
 from os import fdopen, getenv, remove
-from os.path import basename, join
+from os.path import basename, expanduser, join
 from tempfile import mkstemp
 
 
@@ -43,12 +43,11 @@ def build_keycmd_file(keycmds):
 
 
 def read_config():
-    configfile = join(getenv("XDG_CONFIG_HOME", "~/.config"),
+    configfile = join(getenv("XDG_CONFIG_HOME", expanduser("~/.config")),
                       "mplayer-autocmd", "config")
     parser = configparser.ConfigParser()
-    logging.debug("Reading %s", configfile)
+    logging.debug("Reading %s" % configfile)
     parser.read(configfile)
-
     return parser
 
 
