@@ -69,8 +69,8 @@ def main():
         # Sanity check
         if "regex" not in options.options(section):
             raise ValueError("Section %s does not contain a 'regex' key" % section)
-        logging.debug("%s - %s" % (["option.regex"], filename))
-        if re.search(options.get(section, "regex"), filename) is not None:
+        logging.debug("%s - %s" % (options.get(section, "regex"), filename))
+        if re.search(options.get(section, "regex"), filename, re.IGNORECASE) is not None:
             logging.info("Using profile '%s'" % section)
             match = section
             break
