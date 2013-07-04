@@ -51,16 +51,20 @@ def read_config():
     return parser
 
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit(1)
-
+def setup_logging():
     if "-d" in sys.argv:
         logging.basicConfig(level=logging.DEBUG,
                             format="%(levelname)s: %(funcName)s: %(msg)s")
         sys.argv.remove("-d")
     else:
         logging.basicConfig(level=logging.INFO, format="%(msg)s")
+
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(1)
+
+    setup_logging()
     options = read_config()
     # Use the first argument to find the correct section
     filename = basename(sys.argv[1])
