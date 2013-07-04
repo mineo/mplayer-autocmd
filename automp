@@ -60,6 +60,18 @@ def setup_logging():
         logging.basicConfig(level=logging.INFO, format="%(msg)s")
 
 
+def find_config_section_for_filename(options, filename):
+    for section in options.sections():
+        # Sanity check
+        if "regex" not in options.options(section):
+            raise ValueError("Section %s does not contain a 'regex' key" % section)
+        logging.debug("%s - %s" % (options.get(section, "regex"), filename))
+        if re.search(options.get(section, "regex"), filename, re.IGNORECASE) is not None:
+            logging.info("Using profile '%s'" % section)
+            return section
+    return None
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(1)
@@ -68,16 +80,7 @@ def main():
     options = read_config()
     # Use the first argument to find the correct section
     filename = basename(sys.argv[1])
-    match = ""
-    for section in options.sections():
-        # Sanity check
-        if "regex" not in options.options(section):
-            raise ValueError("Section %s does not contain a 'regex' key" % section)
-        logging.debug("%s - %s" % (options.get(section, "regex"), filename))
-        if re.search(options.get(section, "regex"), filename, re.IGNORECASE) is not None:
-            logging.info("Using profile '%s'" % section)
-            match = section
-            break
+    match = find_config_section_for_filename(options, filename)
 
     args = ["mplayer"]
     keycmd_file = None
