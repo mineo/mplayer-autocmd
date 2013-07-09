@@ -30,7 +30,7 @@ from tempfile import mkstemp
 
 
 def build_keycmd_file(keycmds):
-    if keycmds is None:
+    if not keycmds:
         return None
     (fd, filename) = mkstemp("mplayerconf")
     _file = fdopen(fd, "wt")
@@ -100,9 +100,9 @@ def main():
                 except ValueError:
                     pass
         keycmd_file = build_keycmd_file(items)
-        input_conf_string = "--input=conf=%s" % keycmd_file
-
-        args.extend([input_conf_string])
+        if keycmd_file is not None:
+            input_conf_string = "--input=conf=%s" % keycmd_file
+            args.extend([input_conf_string])
     else:
         logging.info("No profile found")
 
