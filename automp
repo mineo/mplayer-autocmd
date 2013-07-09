@@ -93,11 +93,12 @@ def main():
         remove_after_playing = options.getboolean(match,
                                 "remove_after_playing", fallback=False)
         items = options.items(match)
-        for item in non_keyboard_keys:
-            try:
-                items.remove(item)
-            except ValueError:
-                pass
+        for item in items[:]:
+            if item[0] in non_keyboard_keys:
+                try:
+                    items.remove(item)
+                except ValueError:
+                    pass
         keycmd_file = build_keycmd_file(items)
         input_conf_string = "--input=conf=%s" % keycmd_file
 
