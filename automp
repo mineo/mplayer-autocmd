@@ -24,6 +24,7 @@ import re
 import sys
 import subprocess
 
+from collections import defaultdict
 from os import fdopen, getenv, remove
 from os.path import basename, expanduser, join
 from tempfile import mkstemp
@@ -73,7 +74,7 @@ def find_config_section_for_filename(options, filename):
 
 
 non_keyboard_keys = ("regex", "options", "remove_after_playing")
-
+non_keyboard_options = defaultdict(lambda: False)
 
 def main():
     if len(sys.argv) < 2:
@@ -87,15 +88,13 @@ def main():
 
     args = ["mplayer"]
     keycmd_file = None
-    remove_after_playing = False
     if match:
         args.extend(options.get(match, "options", fallback="").split())
-        remove_after_playing = options.getboolean(match,
-                                "remove_after_playing", fallback=False)
         items = options.items(match)
         for item in items[:]:
             if item[0] in non_keyboard_keys:
                 try:
+                    non_keyboard_options[item[0]] = item[1]
                     items.remove(item)
                 except ValueError:
                     pass
@@ -109,7 +108,9 @@ def main():
     args.extend(sys.argv[1:])
     logging.info("Calling %s" % args)
     ret = subprocess.call(args)
-    if not ret and remove_after_playing:
+    # This is basically the same thing RawConfigParser.get_boolean does
+    if not ret and configparser.RawConfigParser.BOOLEAN_STATES[
+            non_keyboard_options["remove_after_playing"]]:
         logging.info("Removing the file as requested")
         remove(sys.argv[1])
     if keycmd_file is not None:
