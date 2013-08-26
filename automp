@@ -73,7 +73,8 @@ def find_config_section_for_filename(options, filename):
     return None
 
 
-non_keyboard_keys = ("regex", "options", "remove_after_playing")
+non_keyboard_keys = ("regex", "options", "remove_after_playing",
+                    "call_after_playing")
 non_keyboard_options = defaultdict(lambda: False)
 
 def main():
@@ -108,11 +109,16 @@ def main():
     args.extend(sys.argv[1:])
     logging.info("Calling %s" % args)
     ret = subprocess.call(args)
-    # This is basically the same thing RawConfigParser.get_boolean does
-    if not ret and configparser.RawConfigParser.BOOLEAN_STATES[
+    if not ret:
+        # This is basically the same thing RawConfigParser.get_boolean does
+        if configparser.RawConfigParser.BOOLEAN_STATES[
             non_keyboard_options["remove_after_playing"]]:
-        logging.info("Removing the file as requested")
-        remove(sys.argv[1])
+            logging.info("Removing the file as requested")
+            remove(sys.argv[1])
+        caa = non_keyboard_options["call_after_playing"]
+        if caa:
+            logging.info("Calling %s" % caa.split(","))
+            subprocess.call(caa.split(","))
     if keycmd_file is not None:
         remove(keycmd_file)
     sys.exit(ret)

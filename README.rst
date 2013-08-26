@@ -19,6 +19,11 @@ for showing you which profile has been chosen.
 
 There are only three supported options (or keys):
 
+call_after_playing
+    An application to call after the file has been played. If the application
+    needs any arguments, separate them with commas from each other and the
+    applications name.
+
 options
     A string containg the arguments to pass to mplayer for this profile.
 
