@@ -19,6 +19,9 @@ for showing you which profile has been chosen.
 
 There are only three supported options (or keys):
 
+options
+    A string containg the arguments to pass to mplayer for this profile.
+
 regex
     A regular expression that has to match the filename using Pythons
     `re.search`_ function in order for the other stuff in the section to be
@@ -27,9 +30,6 @@ regex
 remove_after_playing
     If this is a True value according to `the documentation for getboolean`_
     the file will be removed after it has been played.
-
-options
-    A string containg the arguments to pass to mplayer for this profile.
 
 Every other option is treated as a key (like on your keyboard) with the
 value being the command the key is bound to.
