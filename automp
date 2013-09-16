@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # Copyright (C) 2013 Wieland Hoffmann
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to
-# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-# of the Software, and to permit persons to whom the Software is furnished to do
-# so, subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -65,17 +65,20 @@ def find_config_section_for_filename(options, filename):
     for section in options.sections():
         # Sanity check
         if "regex" not in options.options(section):
-            raise ValueError("Section %s does not contain a 'regex' key" % section)
+            raise ValueError("Section %s does not contain a 'regex' key" %
+                             section)
         logging.debug("%s - %s" % (options.get(section, "regex"), filename))
-        if re.search(options.get(section, "regex"), filename, re.IGNORECASE) is not None:
+        if re.search(options.get(section, "regex"), filename, re.IGNORECASE)\
+           is not None:
             logging.info("Using profile '%s'" % section)
             return section
     return None
 
 
 non_keyboard_keys = ("regex", "options", "remove_after_playing",
-                    "call_after_playing")
+                     "call_after_playing")
 non_keyboard_options = defaultdict(lambda: False)
+
 
 def main():
     if len(sys.argv) < 2:
