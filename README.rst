@@ -17,7 +17,7 @@ possibilities look at `the documentation`_.
 The section name is used as a "profile name", it has no special meaning except
 for showing you which profile has been chosen.
 
-There are only three supported options (or keys):
+These are the supported options:
 
 call_after_playing
     An application to call after the file has been played. If the application
