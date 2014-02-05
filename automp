@@ -104,8 +104,8 @@ def main():
                     pass
         keycmd_file = build_keycmd_file(items)
         if keycmd_file is not None:
-            input_conf_string = "--input=conf=%s" % keycmd_file
-            args.extend([input_conf_string])
+            input_conf_string = "conf=%s" % keycmd_file
+            args.extend(["-input", input_conf_string])
     else:
         logging.info("No profile found")
 
