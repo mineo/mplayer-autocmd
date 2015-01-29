@@ -90,7 +90,7 @@ def main():
     filename = basename(sys.argv[1])
     match = find_config_section_for_filename(options, filename)
 
-    args = ["mplayer"]
+    args = ["mpv"]
     keycmd_file = None
     if match:
         args.extend(options.get(match, "options", fallback="").split())
@@ -104,8 +104,7 @@ def main():
                     pass
         keycmd_file = build_keycmd_file(items)
         if keycmd_file is not None:
-            input_conf_string = "conf=%s" % keycmd_file
-            args.extend(["-input", input_conf_string])
+            args.extend(["--input-conf", keycmd_file])
     else:
         logging.info("No profile found")
 
