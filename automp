@@ -53,10 +53,10 @@ def read_config():
 def setup_logging():
     if "-d" in sys.argv:
         logging.basicConfig(level=logging.DEBUG,
-                            format="%(levelname)s: %(funcName)s: %(msg)s")
+                            format="%(levelname)s: %(funcName)s: %(message)s")
         sys.argv.remove("-d")
     else:
-        logging.basicConfig(level=logging.INFO, format="%(msg)s")
+        logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
 def find_config_section_for_filename(options, filename):
