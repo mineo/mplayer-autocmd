@@ -12,7 +12,7 @@ To use it, just type `automp` every time you want to start mplayer instead of
 The config file (which can be found in
 `$XDG_CONFIG_HOME/mplayer-autocmd-config.yml`) is a file containing
 options in the `YAML <http://www.yaml.org/spec/1.2/spec.html>`_.  A
-global mapping map arbitrary names to the options. While the keys used
+global mapping maps arbitrary names to the options. While the keys used
 in the global mapping don't have a special meaning, they're used for
 informational output.
 
