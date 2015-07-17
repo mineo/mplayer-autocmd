@@ -10,12 +10,11 @@ To use it, just type `automp` every time you want to start mplayer instead of
 `mplayer` or use an alias.
 
 The config file (which can be found in
-`$XDG_CONFIG_HOME/mplayer-autocmd-config`) is a file that's parsed by Pythons
-`configparser` module, for a description of the terminology and it's
-possibilities look at `the documentation`_.
-
-The section name is used as a "profile name", it has no special meaning except
-for showing you which profile has been chosen.
+`$XDG_CONFIG_HOME/mplayer-autocmd-config`) is a file containing
+options in the `YAML <http://www.yaml.org/spec/1.2/spec.html>`_.  A
+global mapping map arbitrary names to the options. While the keys used
+in the global mapping don't have a special meaning, they're used for
+informational output.
 
 These are the supported options:
 
@@ -25,7 +24,7 @@ call_after_playing
     applications name.
 
 options
-    A string containg the arguments to pass to mplayer for this profile.
+    A list of strings containg the arguments to pass to mplayer for this profile.
 
 regex
     A regular expression that has to match the filename using Pythons
@@ -33,21 +32,18 @@ regex
     applied.
 
 remove_after_playing
-    If this is a True value according to `the documentation for getboolean`_
-    the file will be removed after it has been played.
+    If this is True the file will be removed after it has been played.
 
-Every other option is treated as a key (like on your keyboard) with the
-value being the command the key is bound to.
+keys
+    This is another mapping that maps key names to a command that will be
+    executed when the key is pressed.
+
 For a list of all possible keys, use `mplayer --input=keylist`.
 For a list of all possible commands, use `mplayer --input=cmdlist`.
 
 An example config file called `example.config` is part of `the git
 repository`_.
 
-.. _the documentation: http://docs.python.org/3.3/library/configparser.html#supported-ini-file-structure
-
 .. _re.search: http://docs.python.org/3.3/library/re.html#re.search
 
 .. _the git repository: https://github.com/mineo/mplayer-autocmd
-
-.. _the documentation for getboolean: http://docs.python.org/3.3/library/configparser.html?highlight=configparser#configparser.ConfigParser.getboolean

@@ -12,10 +12,11 @@ setup(name="mplayer-autocmd",
       url=["http://github.com/mineo/mplayer-autocmd"],
       license="MIT",
       classifiers=[
-      "Environment :: Console",
-      "License :: OSI Approved :: MIT License",
-      "Natural Language :: English",
-      "Operating System :: OS Independent",
-      "Programming Language :: Python :: 3.3"],
+          "Environment :: Console",
+          "License :: OSI Approved :: MIT License",
+          "Natural Language :: English",
+          "Operating System :: OS Independent",
+          "Programming Language :: Python :: 3.3"],
       data_files=[("share/zsh/site-functions", ["_automp"])],
+      install_requires=['pyyaml']
       )

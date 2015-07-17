@@ -1,5 +1,5 @@
 pkgname=mplayer-autocmd-git
-pkgver=4.5.g096f816
+pkgver=4.6.g0a7291e
 pkgrel=1
 pkgdesc=""
 arch=("any")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2013 Wieland Hoffmann
+# Copyright (C) 2013, 2015 Wieland Hoffmann
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import configparser
+import yaml
 import logging
 import re
 import sys
@@ -35,7 +35,7 @@ def build_keycmd_file(keycmds):
         return None
     (fd, filename) = mkstemp("mplayerconf")
     _file = fdopen(fd, "wt")
-    for key, command in keycmds:
+    for key, command in keycmds.items():
         logging.debug("%s: %s" % (key, command))
         if key not in ("regex", "options"):
             _file.write("%s %s\n" % (key, command))
@@ -45,11 +45,9 @@ def build_keycmd_file(keycmds):
 
 def read_config():
     configfile = join(getenv("XDG_CONFIG_HOME", expanduser("~/.config")),
-                      "mplayer-autocmd", "config")
-    parser = configparser.ConfigParser()
-    logging.debug("Reading %s" % configfile)
-    parser.read(configfile)
-    return parser
+                      "mplayer-autocmd", "config.yml")
+    with open(configfile, "r") as config:
+        return yaml.load(config)
 
 
 def setup_logging():
@@ -62,21 +60,17 @@ def setup_logging():
 
 
 def find_config_section_for_filename(options, filename):
-    for section in options.sections():
+    for key, section in options.items():
         # Sanity check
-        if "regex" not in options.options(section):
+        if "regex" not in section.keys():
             raise ValueError("Section %s does not contain a 'regex' key" %
                              section)
-        logging.debug("%s - %s" % (options.get(section, "regex"), filename))
-        if re.search(options.get(section, "regex"), filename, re.IGNORECASE)\
-           is not None:
-            logging.info("Using profile '%s'" % section)
+        if re.search(section["regex"], filename, re.IGNORECASE) is not None:
+            logging.info("Using profile '%s'" % key)
             return section
     return None
 
 
-non_keyboard_keys = ("regex", "options", "remove_after_playing",
-                     "call_after_playing")
 non_keyboard_options = defaultdict(lambda: None)
 
 
@@ -88,21 +82,13 @@ def main():
     options = read_config()
     # Use the first argument to find the correct section
     filename = basename(sys.argv[1])
-    match = find_config_section_for_filename(options, filename)
+    file_options = find_config_section_for_filename(options, filename)
 
     args = ["mpv"]
     keycmd_file = None
-    if match:
-        args.extend(options.get(match, "options", fallback="").split())
-        items = options.items(match)
-        for item in items[:]:
-            if item[0] in non_keyboard_keys:
-                try:
-                    non_keyboard_options[item[0]] = item[1]
-                    items.remove(item)
-                except ValueError:
-                    pass
-        keycmd_file = build_keycmd_file(items)
+    if file_options is not None:
+        args.extend(file_options.get("options", []))
+        keycmd_file = build_keycmd_file(file_options.get("keys", {}))
         if keycmd_file is not None:
             args.extend(["--input-conf", keycmd_file])
     else:
@@ -111,16 +97,14 @@ def main():
     args.extend(sys.argv[1:])
     logging.info("Calling %s" % args)
     ret = subprocess.call(args)
-    if not ret:
-        rap_setting = non_keyboard_options["remove_after_playing"]
-        if (rap_setting is not None and
-           configparser.RawConfigParser.BOOLEAN_STATES[rap_setting]):
+    if not ret and file_options is not None:
+        if file_options.get("remove_after_playing", False):
             logging.info("Removing the file as requested")
             remove(sys.argv[1])
-        caa_setting = non_keyboard_options["call_after_playing"]
+        caa_setting = file_options["call_after_playing"]
         if caa_setting is not None:
-            logging.info("Calling %s" % caa_setting.split(","))
-            subprocess.call(caa_setting.split(","))
+            logging.info("Calling %s" % caa_setting)
+            subprocess.call(caa_setting)
     if keycmd_file is not None:
         remove(keycmd_file)
     sys.exit(ret)
