@@ -58,28 +58,28 @@ def setup_logging():
         logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 
-def find_config_section_for_filename(options, filename):
-    for key, section in options.items():
-        # Sanity check
-        if "regex" not in section.keys():
-            raise ValueError("Section %s does not contain a 'regex' key" %
-                             section)
-        if re.search(section["regex"], filename, re.IGNORECASE) is not None:
-            logging.info("Using profile '%s'" % key)
-            return section
-    return None
-
-
 class Player(object):
     def __init__(self, options):
         self.options = options
         self.files_to_remove = []
 
+    def find_config_section_for_filename(self, filename):
+        for key, section in self.options.items():
+            # Sanity check
+            if "regex" not in section.keys():
+                raise ValueError("Section %s does not contain a 'regex' key" %
+                                 section)
+            if (re.search(section["regex"], filename, re.IGNORECASE) is not
+                None):  # noqa
+                logging.info("Using profile '%s'" % key)
+                return section
+        return None
+
     def __enter__(self):
         return self
 
     def play(self, filename):
-        file_options = find_config_section_for_filename(self.options, filename)
+        file_options = self.find_config_section_for_filename(filename)
 
         if file_options is None:
             logging.info("No profile found")
