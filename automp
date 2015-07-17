@@ -94,9 +94,9 @@ class Player(object):
         keycmd_file = build_keycmd_file(file_options.get("keys", {}))
         if keycmd_file is not None:
             args.extend(["--input-conf", keycmd_file])
+            self.files_to_remove.append(keycmd_file)
 
         logging.info("Calling %s", args)
-
         ret = subprocess.call(args)
 
         if not ret:
@@ -107,9 +107,6 @@ class Player(object):
             if caa_setting is not None:
                 logging.info("Calling %s", caa_setting)
                 subprocess.call(caa_setting)
-
-        if keycmd_file is not None:
-            self.files_to_remove.append(keycmd_file)
 
     def __exit__(self, type, value, traceback):
         for filename in self.files_to_remove:
