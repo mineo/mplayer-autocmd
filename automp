@@ -26,7 +26,7 @@ import subprocess
 
 from collections import defaultdict
 from os import fdopen, getenv, remove
-from os.path import basename, expanduser, join
+from os.path import expanduser, join
 from tempfile import mkstemp
 
 
@@ -71,7 +71,50 @@ def find_config_section_for_filename(options, filename):
     return None
 
 
-non_keyboard_options = defaultdict(lambda: None)
+class Player(object):
+    def __init__(self, options):
+        self.options = options
+        self.files_to_remove = []
+
+    def __enter__(self):
+        return self
+
+    def play(self, filename):
+        file_options = find_config_section_for_filename(self.options, filename)
+
+        if file_options is None:
+            logging.info("No profile found")
+            return
+
+        args = ["mpv"]
+        args.append(filename)
+
+        keycmd_file = None
+        args.extend(file_options.get("options", []))
+        keycmd_file = build_keycmd_file(file_options.get("keys", {}))
+        if keycmd_file is not None:
+            args.extend(["--input-conf", keycmd_file])
+
+        logging.info("Calling %s", args)
+
+        ret = subprocess.call(args)
+
+        if not ret:
+            if file_options.get("remove_after_playing", False):
+                self.files_to_remove.append(filename)
+
+            caa_setting = file_options["call_after_playing"]
+            if caa_setting is not None:
+                logging.info("Calling %s", caa_setting)
+                subprocess.call(caa_setting)
+
+        if keycmd_file is not None:
+            self.files_to_remove.append(keycmd_file)
+
+    def __exit__(self, type, value, traceback):
+        for filename in self.files_to_remove:
+            logging.info("Removing %s", filename)
+            remove(filename)
 
 
 def main():
@@ -80,34 +123,10 @@ def main():
 
     setup_logging()
     options = read_config()
-    # Use the first argument to find the correct section
-    filename = basename(sys.argv[1])
-    file_options = find_config_section_for_filename(options, filename)
 
-    args = ["mpv"]
-    keycmd_file = None
-    if file_options is not None:
-        args.extend(file_options.get("options", []))
-        keycmd_file = build_keycmd_file(file_options.get("keys", {}))
-        if keycmd_file is not None:
-            args.extend(["--input-conf", keycmd_file])
-    else:
-        logging.info("No profile found")
-
-    args.extend(sys.argv[1:])
-    logging.info("Calling %s" % args)
-    ret = subprocess.call(args)
-    if not ret and file_options is not None:
-        if file_options.get("remove_after_playing", False):
-            logging.info("Removing the file as requested")
-            remove(sys.argv[1])
-        caa_setting = file_options["call_after_playing"]
-        if caa_setting is not None:
-            logging.info("Calling %s" % caa_setting)
-            subprocess.call(caa_setting)
-    if keycmd_file is not None:
-        remove(keycmd_file)
-    sys.exit(ret)
+    with Player(options) as p:
+        for filename in sys.argv[1:]:
+            p.play(filename)
 
 
 if __name__ == '__main__':
