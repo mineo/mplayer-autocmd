@@ -79,26 +79,25 @@ class Player(object):
         return self
 
     def play(self, filename):
+        args = ["mpv"]
+        args.append(filename)
+
         file_options = self.find_config_section_for_filename(filename)
 
         if file_options is None:
             logging.info("No profile found")
-            return
-
-        args = ["mpv"]
-        args.append(filename)
-
-        keycmd_file = None
-        args.extend(file_options.get("options", []))
-        keycmd_file = build_keycmd_file(file_options.get("keys", {}))
-        if keycmd_file is not None:
-            args.extend(["--input-conf", keycmd_file])
-            self.files_to_remove.append(keycmd_file)
+        else:
+            keycmd_file = None
+            args.extend(file_options.get("options", []))
+            keycmd_file = build_keycmd_file(file_options.get("keys", {}))
+            if keycmd_file is not None:
+                args.extend(["--input-conf", keycmd_file])
+                self.files_to_remove.append(keycmd_file)
 
         logging.info("Calling %s", args)
         ret = subprocess.call(args)
 
-        if not ret:
+        if not ret and file_options is not None:
             if file_options.get("remove_after_playing", False):
                 self.files_to_remove.append(filename)
 
