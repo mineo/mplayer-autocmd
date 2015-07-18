@@ -68,7 +68,7 @@ class Player(object):
             # Sanity check
             if "regex" not in section.keys():
                 raise ValueError("Section %s does not contain a 'regex' key" %
-                                 section)
+                                 key)
             if (re.search(section["regex"], filename, re.IGNORECASE) is not
                 None):  # noqa
                 logging.info("Using profile '%s'" % key)
